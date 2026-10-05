@@ -5,9 +5,183 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>dubem</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 20l1.5-4.5A8 8 0 1 1 8.5 18.5z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 4 3 11l6 2.5L11 20l3-4.5 5 3.5z"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 20h16"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+</svg>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+        <!-- ================= SITE FRAME ================= -->
+  <div class="frame" id="frame" data-device="desktop" data-auth="guest">
+    <header class="nav">
+      <a class="logo" href="#home"><i>D</i>Dubem</a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="#home" aria-current="page">Opportunities</a>
+        <a href="#home">Jobs</a>
+        <a href="#home">Internships</a>
+        <a href="#home">Fellowships</a>
+        <a href="#post">For organizations</a>
+      </nav>
+      <div class="nav-actions nav-guest">
+        <a class="btn btn-ghost btn-sm" href="#signup">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="#signup">Create account</a>
+        <button class="menu-btn" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+      </div>
+      <div class="nav-actions nav-user">
+        <a class="btn btn-ghost btn-sm" href="#post"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Post</a>
+        <span class="avatar" aria-label="Signed in as Ada">AO</span>
+        <button class="menu-btn" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <section class="panel" id="p-home" role="tabpanel" aria-labelledby="t-home">
+      <div class="hero">
+        <h2>Opportunities from verified organizations, in one place</h2>
+        <p class="sub">Jobs, internships and fellowships across Africa and the world. Every listing is reviewed before it goes live.</p>
+        <form class="searchbar" onsubmit="return false" role="search">
+          <label class="sr" for="q" style="position:absolute;left:-9999px">Search</label>
+          <input class="input" id="q" type="search" placeholder="Job title, skill or organization">
+          <label class="sr" for="region" style="position:absolute;left:-9999px">Region</label>
+          <select class="select" id="region"><option>Anywhere</option><option>Africa</option><option>Remote-Global</option><option>Europe</option><option>North America</option><option>Asia</option></select>
+          <label class="sr" for="ptype" style="position:absolute;left:-9999px">Type</label>
+          <select class="select" id="ptype"><option>All types</option><option>Job</option><option>Internship</option><option>Fellowship</option><option>Volunteer</option></select>
+          <button class="btn btn-primary" type="submit"><svg class="ic"><use href="#i-search"/></svg>Search</button>
+        </form>
+        <div class="regions" role="group" aria-label="Quick regions">
+          <button aria-pressed="true">Africa</button>
+          <button aria-pressed="false">Remote-Global</button>
+          <button aria-pressed="false">Europe</button>
+          <button aria-pressed="false">North America</button>
+          <button aria-pressed="false">Asia</button>
+        </div>
+      </div>
+
+      <div class="latest" aria-label="Just posted">
+        <strong>Just posted</strong>
+        <div class="latest-row">
+          <div class="latest-item"><b>Backend Developer</b><span>Kora Health, 12 minutes ago</span></div>
+          <div class="latest-item"><b>Programme Intern, Climate Policy</b><span>Sahel Climate Lab, 1 hour ago</span></div>
+          <div class="latest-item"><b>Frontend Developer</b><span>Lumen Payments, 3 hours ago</span></div>
+          <div class="latest-item"><b>Community Fellowship 2027</b><span>Open Roots Foundation, 5 hours ago</span></div>
+        </div>
+      </div>
+
+      <div class="board">
+        <aside class="filters" aria-label="Filters">
+          <fieldset><legend>Type</legend>
+            <label><input type="checkbox" checked> Jobs</label>
+            <label><input type="checkbox" checked> Internships</label>
+            <label><input type="checkbox" checked> Fellowships</label>
+            <label><input type="checkbox"> Volunteer</label>
+          </fieldset>
+          <fieldset><legend>Work mode</legend>
+            <label><input type="checkbox"> Remote</label>
+            <label><input type="checkbox"> Hybrid</label>
+            <label><input type="checkbox"> Onsite</label>
+          </fieldset>
+          <fieldset><legend>Posted</legend>
+            <label><input type="checkbox"> Last 24 hours</label>
+            <label><input type="checkbox" checked> Last 7 days</label>
+            <label><input type="checkbox"> Last 30 days</label>
+          </fieldset>
+          <button class="btn btn-ghost btn-sm" type="button"><svg class="ic ic-sm"><use href="#i-bell"/></svg>Alert me about this search</button>
+        </aside>
+
+        <div>
+          <div class="board-head">
+            <h3>142 opportunities</h3>
+            <button class="btn btn-ghost btn-sm filters-btn" type="button"><svg class="ic ic-sm"><use href="#i-filter"/></svg>Filters</button>
+          </div>
+          <div class="jobs">
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">KH</div>
+              <div>
+                <h4><a href="#detail">Backend Developer (Python and Django)</a></h4>
+                <div class="job-org">Kora Health <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Job</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Remote-Global</span><span class="chip">Full-time</span><span class="chip">Closes 15 Nov</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">$2,500 to $3,500 a month</span><span class="when">12 minutes ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">SC</div>
+              <div>
+                <h4><a href="#detail">Programme Intern, Climate Policy</a></h4>
+                <div class="job-org">Sahel Climate Lab <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Internship</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Abuja, Nigeria</span><span class="chip">Hybrid</span><span class="chip">6 months</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="true"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">₦150,000 a month</span><span class="when">1 hour ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">LP</div>
+              <div>
+                <h4><a href="#detail">Frontend Developer (React)</a></h4>
+                <div class="job-org">Lumen Payments <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Job</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Lagos, Nigeria</span><span class="chip">Onsite</span><span class="chip">Full-time</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">₦900,000 to ₦1,400,000 a month</span><span class="when">3 hours ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">OR</div>
+              <div>
+                <h4><a href="#detail">Community Fellowship 2027</a></h4>
+                <div class="job-org">Open Roots Foundation <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Fellowship</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Nairobi, Kenya</span><span class="chip">Remote</span><span class="chip">Funded</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">Stipend provided</span><span class="when">5 hours ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">TL</div>
+              <div>
+                <h4><a href="#detail">Data Analyst</a></h4>
+                <div class="job-org">Tidewater Logistics <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Job</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Accra, Ghana</span><span class="chip">Hybrid</span><span class="chip">Full-time</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">GH₵ 9,000 to 12,000 a month</span><span class="when">Yesterday</span></div>
+            </article>
+          </div>
+          <div class="pager">
+            <span>Showing 1 to 5 of 142</span>
+            <div><button class="btn btn-ghost btn-sm" disabled>Previous</button><button class="btn btn-primary btn-sm">1</button><button class="btn btn-ghost btn-sm">2</button><button class="btn btn-ghost btn-sm">3</button><button class="btn btn-ghost btn-sm">Next</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="follow">
+        <div>
+          <h3>Get new listings where you already are</h3>
+          <p>Follow Dubem on WhatsApp or Telegram, or create an account to get alerts for the searches you care about.</p>
+        </div>
+        <div class="acts">
+          <a class="btn btn-primary" href="#home"><svg class="ic"><use href="#i-chat"/></svg>WhatsApp channel</a>
+          <a class="btn btn-ghost" href="#home"><svg class="ic"><use href="#i-send"/></svg>Telegram</a>
+          <a class="btn btn-ghost" href="#signup"><svg class="ic"><use href="#i-bell"/></svg>Create alerts</a>
+        </div>
+      </div>
+      <footer class="foot"><span>Dubem.com. Never pay to get a job.</span><span>About, Privacy, Terms, Contact</span></footer>
+    </section>
+
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

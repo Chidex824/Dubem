@@ -10,6 +10,4 @@ function name(params) {
   )
 }
 
-export defunction name(params) {
-  
-} App
+export default App
