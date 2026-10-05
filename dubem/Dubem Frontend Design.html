@@ -1,0 +1,938 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dubem Frontend Design</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout concept: a design board with one tab per screen. The site itself lives in a
+   container-query frame, so the Desktop and Phone views reflow the real layout, not a screenshot.
+   Deliberate single look: blue and white, as requested. */
+:root {
+  --blue-950: #0A1B4D;
+  --blue-800: #12348F;
+  --blue-600: #1F4FE0;
+  --blue-500: #3A6BFF;
+  --blue-200: #C9D8FF;
+  --blue-100: #E3EBFF;
+  --blue-50: #F3F6FF;
+  --white: #FFFFFF;
+  --ink: #0A1B4D;
+  --muted: #55648F;
+  --line: #D5DEF5;
+  --amber-bg: #FFF4D6; --amber-ink: #7A5200;
+  --red-bg: #FFE9E9; --red-ink: #9A1F1F;
+  --green-bg: #E2F6EA; --green-ink: #146B3A;
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--blue-50); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 56px; }
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--blue-600); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--blue-500); outline-offset: 2px; }
+.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ic-sm { width: 15px; height: 15px; }
+
+/* ---------- Board chrome ---------- */
+.wrap { max-width: 1240px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+.bar { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.bar h1 { font-size: 1.6rem; font-weight: 700; }
+.bar p { color: var(--muted); font-size: .92rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; min-width: 0; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; min-width: 0; max-width: 100%; padding-bottom: 4px; }
+.tabs button { flex: none; border: 1px solid var(--line); background: var(--white); color: var(--muted); padding: 8px 14px; border-radius: 999px; font-weight: 600; font-size: .9rem; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--blue-600); border-color: var(--blue-600); color: var(--white); }
+.tabs button:hover:not([aria-selected="true"]) { border-color: var(--blue-500); color: var(--blue-600); }
+.seg { display: inline-flex; background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: .85rem; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--blue-100); color: var(--blue-800); }
+.note { color: var(--muted); font-size: .85rem; }
+
+/* ---------- Site frame ---------- */
+.frame { container-type: inline-size; container-name: site; width: 100%; background: var(--white); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-inline: auto; transition: max-width .25s ease; }
+.frame[data-device="phone"] { max-width: 390px; border: 8px solid var(--blue-950); border-radius: 30px; }
+.panel[hidden] { display: none !important; }
+.pad { padding: 28px 24px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: 10px; padding: 10px 18px; font-weight: 600; font-size: .92rem; cursor: pointer; text-decoration: none; transition: background .15s ease, border-color .15s ease; }
+.btn-primary { background: var(--blue-600); color: var(--white); }
+.btn-primary:hover { background: var(--blue-800); }
+.btn-ghost { background: var(--white); color: var(--blue-600); border-color: var(--blue-200); }
+.btn-ghost:hover { border-color: var(--blue-600); }
+.btn-quiet { background: transparent; color: var(--blue-950); }
+.btn-quiet:hover { background: var(--blue-50); }
+.btn-white { background: var(--white); color: var(--blue-800); }
+.btn-sm { padding: 7px 12px; font-size: .84rem; border-radius: 8px; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; background: var(--blue-50); border: 1px solid var(--line); color: var(--muted); font-size: .8rem; font-weight: 500; white-space: nowrap; }
+.chip-solid { background: var(--blue-100); border-color: var(--blue-100); color: var(--blue-800); font-weight: 600; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 6px; font-size: .78rem; font-weight: 600; }
+.pill-ok { background: var(--green-bg); color: var(--green-ink); }
+.pill-warn { background: var(--amber-bg); color: var(--amber-ink); }
+.pill-bad { background: var(--red-bg); color: var(--red-ink); }
+.pill-info { background: var(--blue-100); color: var(--blue-800); }
+.verified { display: inline-flex; align-items: center; gap: 4px; color: var(--blue-600); font-weight: 600; font-size: .8rem; }
+.logo-tile { width: 48px; height: 48px; border-radius: 10px; background: var(--blue-100); color: var(--blue-800); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; flex: none; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label, .field .lbl { font-weight: 600; font-size: .86rem; }
+.field .hint { color: var(--muted); font-size: .8rem; }
+.input, .select, .textarea { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--white); border-radius: 10px; padding: 10px 12px; }
+.input:hover, .select:hover, .textarea:hover { border-color: var(--blue-200); }
+.input:focus-visible, .select:focus-visible, .textarea:focus-visible { outline: 3px solid var(--blue-200); border-color: var(--blue-500); outline-offset: 0; }
+.textarea { min-height: 120px; resize: vertical; }
+.card { border: 1px solid var(--line); border-radius: 14px; background: var(--white); padding: 20px; min-width: 0; }
+.card h3 { font-size: 1.1rem; margin-bottom: 4px; }
+.banner { display: flex; gap: 10px; align-items: flex-start; border-radius: 10px; padding: 10px 14px; font-size: .88rem; }
+.banner-info { background: var(--blue-50); border: 1px solid var(--blue-200); color: var(--blue-800); }
+.banner-ok { background: var(--green-bg); color: var(--green-ink); }
+.banner-bad { background: var(--red-bg); color: var(--red-ink); }
+.banner-warn { background: var(--amber-bg); color: var(--amber-ink); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* nav */
+.nav { display: flex; align-items: center; gap: 18px; padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--white); }
+.logo { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; color: var(--blue-950); text-decoration: none; }
+.logo i { width: 30px; height: 30px; border-radius: 9px; background: var(--blue-600); color: var(--white); display: grid; place-items: center; font-style: normal; font-size: 1.05rem; }
+.nav-links { display: flex; gap: 20px; margin-left: 10px; }
+.nav-links a { color: var(--muted); font-weight: 600; text-decoration: none; font-size: .92rem; }
+.nav-links a:hover, .nav-links a[aria-current] { color: var(--blue-600); }
+.nav-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.menu-btn { display: none; border: 1px solid var(--line); background: var(--white); border-radius: 10px; width: 40px; height: 40px; align-items: center; justify-content: center; cursor: pointer; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--blue-600); color: var(--white); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.nav-user { display: none; align-items: center; gap: 8px; }
+.frame[data-auth="user"] .nav-guest { display: none; }
+.frame[data-auth="user"] .nav-user { display: flex; }
+
+/* home */
+.hero { background: var(--blue-600); color: var(--white); padding: 44px 24px 36px; }
+.hero h2 { font-size: 2.7rem; line-height: 1.08; font-weight: 700; max-width: 18ch; }
+.hero .sub { margin-top: 12px; max-width: 52ch; color: #DCE6FF; font-size: 1.05rem; }
+.searchbar { margin-top: 24px; display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 8px; background: var(--white); border-radius: 14px; padding: 8px; max-width: 880px; }
+.searchbar .input, .searchbar .select { border-color: transparent; background: var(--blue-50); }
+.regions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+.regions button { background: transparent; border: 1px solid #7C9BFF; color: var(--white); border-radius: 999px; padding: 5px 14px; font-weight: 600; font-size: .85rem; cursor: pointer; }
+.regions button[aria-pressed="true"], .regions button:hover { background: var(--white); color: var(--blue-800); border-color: var(--white); }
+.latest { display: flex; gap: 14px; align-items: stretch; padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--white); }
+.latest > strong { flex: none; align-self: center; font-family: var(--font-display); color: var(--blue-600); }
+.latest-row { display: flex; gap: 10px; overflow-x: auto; min-width: 0; }
+.latest-item { flex: none; border-left: 3px solid var(--blue-500); padding: 2px 12px; }
+.latest-item b { display: block; font-size: .88rem; }
+.latest-item span { color: var(--muted); font-size: .8rem; }
+.board { display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 28px 24px; }
+.filters { display: flex; flex-direction: column; gap: 20px; }
+.filters fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.filters legend { font-family: var(--font-display); font-weight: 600; margin-bottom: 6px; padding: 0; }
+.filters label { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
+.filters input { accent-color: var(--blue-600); width: 16px; height: 16px; }
+.filters-btn { display: none; }
+.board-head { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.board-head h3 { font-size: 1.25rem; }
+.jobs { display: flex; flex-direction: column; }
+.job { display: grid; grid-template-columns: 48px 1fr auto; gap: 6px 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.job:first-child { border-top: 1px solid var(--line); margin-top: 8px; }
+.job h4 { font-size: 1.1rem; font-weight: 600; }
+.job h4 a { color: var(--ink); text-decoration: none; }
+.job h4 a:hover { color: var(--blue-600); }
+.job-org { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; color: var(--muted); font-size: .88rem; margin-top: 2px; }
+.job-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.job-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.job-side .pay { font-weight: 700; font-size: .92rem; }
+.job-side .when { color: var(--muted); font-size: .8rem; }
+.save { border: 1px solid var(--line); background: var(--white); border-radius: 8px; width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); cursor: pointer; }
+.save:hover { color: var(--blue-600); border-color: var(--blue-500); }
+.save[aria-pressed="true"] { background: var(--blue-100); color: var(--blue-600); border-color: var(--blue-200); }
+.save[aria-pressed="true"] .ic path { fill: currentColor; }
+.pager { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: space-between; align-items: center; margin-top: 18px; color: var(--muted); font-size: .88rem; }
+.pager div { display: flex; gap: 6px; }
+.follow { background: var(--blue-50); border-top: 1px solid var(--line); padding: 28px 24px; display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; }
+.follow h3 { font-size: 1.35rem; }
+.follow p { color: var(--muted); margin-top: 4px; max-width: 46ch; }
+.follow .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.foot { padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+
+/* detail */
+.crumb { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .88rem; text-decoration: none; }
+.d-head { display: flex; flex-wrap: wrap; gap: 16px 24px; justify-content: space-between; align-items: flex-start; margin-top: 14px; }
+.d-title { display: flex; gap: 16px; min-width: 0; }
+.d-title h2 { font-size: 2rem; line-height: 1.12; font-weight: 700; }
+.d-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.detail { display: grid; grid-template-columns: 1fr 320px; gap: 36px; margin-top: 28px; }
+.detail article { min-width: 0; }
+.detail article h3 { font-size: 1.15rem; margin: 22px 0 8px; }
+.detail article h3:first-child { margin-top: 0; }
+.detail article p, .detail article li { max-width: 68ch; }
+.detail article ul { padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding: 16px; background: var(--blue-50); border-radius: 12px; margin-top: 22px; }
+.facts dt { color: var(--muted); font-size: .78rem; }
+.facts dd { margin: 2px 0 0; font-weight: 700; }
+.aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.safe { background: var(--blue-950); color: var(--white); border-radius: 14px; padding: 18px; }
+.safe h4 { font-size: 1.05rem; display: flex; gap: 8px; align-items: center; }
+.safe p { margin-top: 6px; color: #C9D8FF; font-size: .88rem; }
+.safe .btn { margin-top: 12px; }
+.mini { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.mini a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: .92rem; }
+.mini a:hover { color: var(--blue-600); }
+.mini span { display: block; color: var(--muted); font-weight: 400; font-size: .8rem; }
+
+/* signup */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 920px; margin-inline: auto; align-items: start; }
+.two h2 { font-size: 1.6rem; }
+.form { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.role { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--blue-50); border-radius: 12px; padding: 4px; }
+.role button { border: 0; background: transparent; border-radius: 9px; padding: 9px; font-weight: 600; cursor: pointer; color: var(--muted); }
+.role button[aria-pressed="true"] { background: var(--white); color: var(--blue-800); box-shadow: 0 1px 2px rgba(10, 27, 77, .15); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: .86rem; color: var(--muted); }
+.check input { accent-color: var(--blue-600); margin-top: 3px; width: 16px; height: 16px; }
+.mailmark { width: 64px; height: 64px; border-radius: 50%; background: var(--blue-100); color: var(--blue-600); display: grid; place-items: center; }
+.mailmark .ic { width: 30px; height: 30px; }
+.states { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+
+/* account */
+.acct { display: grid; grid-template-columns: 210px 1fr; gap: 32px; }
+.side-nav { display: flex; flex-direction: column; gap: 4px; }
+.side-nav a { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: .92rem; }
+.side-nav a[aria-current] { background: var(--blue-100); color: var(--blue-800); }
+.side-nav a:hover:not([aria-current]) { background: var(--blue-50); }
+.acct-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.acct-main h2 { font-size: 1.7rem; }
+.sec-head { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.sec-head h3 { font-size: 1.15rem; }
+.rows { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.row .grow { min-width: 0; flex: 1 1 220px; }
+.row b { display: block; }
+.row .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.row-tools { display: flex; align-items: center; gap: 10px; }
+.switch { position: relative; width: 38px; height: 22px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+.switch span { position: absolute; inset: 0; background: var(--blue-200); border-radius: 999px; transition: background .15s ease; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--white); transition: transform .15s ease; }
+.switch input:checked + span { background: var(--blue-600); }
+.switch input:checked + span::after { transform: translateX(16px); }
+.switch input:focus-visible + span { outline: 3px solid var(--blue-500); outline-offset: 2px; }
+.new-alert { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 10px; align-items: end; margin-top: 14px; padding: 16px; background: var(--blue-50); border-radius: 12px; }
+.dashed { border: 2px dashed var(--blue-200); border-radius: 14px; padding: 20px; display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between; }
+.dashed div { min-width: 0; }
+.dashed p { color: var(--muted); font-size: .88rem; }
+.icon-btn { border: 0; background: transparent; color: var(--muted); width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; }
+.icon-btn:hover { background: var(--blue-50); color: var(--red-ink); }
+
+/* post */
+.post { display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+.post h2 { font-size: 1.7rem; }
+.post .form { margin-top: 18px; }
+.steps { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; }
+.steps li { position: relative; padding: 0 0 18px 34px; }
+.steps li:last-child { padding-bottom: 0; }
+.steps li::before { content: attr(data-n); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--blue-100); color: var(--blue-800); font-weight: 700; font-size: .78rem; display: grid; place-items: center; }
+.steps li::after { content: ""; position: absolute; left: 11px; top: 26px; bottom: 2px; width: 2px; background: var(--blue-100); }
+.steps li:last-child::after { display: none; }
+.steps li b { display: block; font-size: .92rem; }
+.steps li span { color: var(--muted); font-size: .84rem; }
+.opts { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.opts label { display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; }
+.opts input { accent-color: var(--blue-600); width: 16px; height: 16px; margin-top: 3px; }
+.opts small { display: block; color: var(--muted); }
+
+/* admin */
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--white); min-width: 0; }
+.tile span { color: var(--muted); font-size: .84rem; }
+.tile b { display: block; font-family: var(--font-display); font-size: 1.9rem; line-height: 1.15; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tile small { color: var(--muted); font-size: .78rem; }
+.charts { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin-top: 14px; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart h3 { font-size: 1.05rem; }
+.bars { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.bar-row { display: grid; grid-template-columns: 78px 1fr 40px; gap: 10px; align-items: center; font-size: .88rem; }
+.bar-track { height: 12px; background: var(--blue-50); border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--blue-600); border-radius: 6px; }
+.bar-row b { text-align: right; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; margin-top: 8px; border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: .88rem; }
+th { text-align: left; background: var(--blue-50); color: var(--muted); font-weight: 600; font-size: .8rem; padding: 10px 14px; }
+td { padding: 12px 14px; border-top: 1px solid var(--line); vertical-align: middle; }
+td .t { font-weight: 600; }
+td .s { color: var(--muted); font-size: .8rem; }
+.acts-cell { display: flex; gap: 6px; }
+
+/* guide */
+.guide { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 28px 24px; display: flex; flex-direction: column; gap: 32px; }
+.guide h2 { font-size: 1.5rem; margin-bottom: 4px; }
+.guide h3 { font-size: 1.1rem; margin-bottom: 10px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.sw { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--white); }
+.sw i { display: block; height: 64px; }
+.sw div { padding: 8px 12px; font-size: .84rem; }
+.sw b { display: block; }
+.sw span { color: var(--muted); font-size: .78rem; }
+.type-row { display: flex; flex-wrap: wrap; gap: 4px 20px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.type-row small { color: var(--muted); width: 180px; flex: none; }
+.demo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.guide ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.guide li { max-width: 70ch; }
+.guide code { background: var(--blue-50); border-radius: 4px; padding: 1px 5px; font-size: .86em; }
+
+/* container-based reflow */
+@container site (max-width: 780px) {
+  .nav-links { display: none; }
+  .menu-btn { display: inline-flex; }
+  .nav-guest .btn-ghost { display: none; }
+  .hero h2 { font-size: 2.1rem; }
+  .searchbar { grid-template-columns: 1fr; }
+  .board, .detail, .two, .acct, .post { grid-template-columns: 1fr; gap: 24px; }
+  .filters { display: none; }
+  .filters-btn { display: inline-flex; }
+  .tiles { grid-template-columns: repeat(2, 1fr); }
+  .charts { grid-template-columns: 1fr; }
+  .new-alert { grid-template-columns: 1fr 1fr; }
+  .side-nav { flex-direction: row; overflow-x: auto; }
+  .side-nav a { flex: none; }
+  .d-title h2 { font-size: 1.6rem; }
+}
+@container site (max-width: 520px) {
+  .pad, .board, .follow, .foot, .hero, .latest { padding-inline: 16px; }
+  .nav { padding-inline: 16px; gap: 10px; }
+  .job { grid-template-columns: 44px 1fr; }
+  .job-side { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; text-align: left; }
+  .logo-tile { width: 44px; height: 44px; }
+  .new-alert, .grid-2 { grid-template-columns: 1fr; }
+  .hero h2 { font-size: 1.85rem; }
+  .latest > strong { display: none; }
+  .d-actions { width: 100%; }
+  .d-actions .btn-primary { flex: 1 1 100%; }
+}
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } .type-row small { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 20l1.5-4.5A8 8 0 1 1 8.5 18.5z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 4 3 11l6 2.5L11 20l3-4.5 5 3.5z"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 20h16"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="bar">
+    <div>
+      <h1>Dubem frontend design</h1>
+      <p>Screens for the job board, accounts, alerts, posting and admin. Blue and white, mobile first.</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="tabs" role="tablist" aria-label="Screens">
+      <button role="tab" id="t-home" data-tab="home" aria-selected="true">Home and job board</button>
+      <button role="tab" id="t-detail" data-tab="detail" aria-selected="false">Job detail</button>
+      <button role="tab" id="t-signup" data-tab="signup" aria-selected="false">Sign up and verify</button>
+      <button role="tab" id="t-account" data-tab="account" aria-selected="false">Seeker account</button>
+      <button role="tab" id="t-post" data-tab="post" aria-selected="false">Post an opportunity</button>
+      <button role="tab" id="t-admin" data-tab="admin" aria-selected="false">Admin and analytics</button>
+      <button role="tab" id="t-guide" data-tab="guide" aria-selected="false">Style guide</button>
+    </div>
+    <div class="seg" id="device" role="group" aria-label="Preview size">
+      <button data-device="desktop" aria-pressed="true">Desktop</button>
+      <button data-device="phone" aria-pressed="false">Phone</button>
+    </div>
+  </div>
+
+  <!-- ================= SITE FRAME ================= -->
+  <div class="frame" id="frame" data-device="desktop" data-auth="guest">
+    <header class="nav">
+      <a class="logo" href="#home"><i>D</i>Dubem</a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="#home" aria-current="page">Opportunities</a>
+        <a href="#home">Jobs</a>
+        <a href="#home">Internships</a>
+        <a href="#home">Fellowships</a>
+        <a href="#post">For organizations</a>
+      </nav>
+      <div class="nav-actions nav-guest">
+        <a class="btn btn-ghost btn-sm" href="#signup">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="#signup">Create account</a>
+        <button class="menu-btn" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+      </div>
+      <div class="nav-actions nav-user">
+        <a class="btn btn-ghost btn-sm" href="#post"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Post</a>
+        <span class="avatar" aria-label="Signed in as Ada">AO</span>
+        <button class="menu-btn" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <section class="panel" id="p-home" role="tabpanel" aria-labelledby="t-home">
+      <div class="hero">
+        <h2>Opportunities from verified organizations, in one place</h2>
+        <p class="sub">Jobs, internships and fellowships across Africa and the world. Every listing is reviewed before it goes live.</p>
+        <form class="searchbar" onsubmit="return false" role="search">
+          <label class="sr" for="q" style="position:absolute;left:-9999px">Search</label>
+          <input class="input" id="q" type="search" placeholder="Job title, skill or organization">
+          <label class="sr" for="region" style="position:absolute;left:-9999px">Region</label>
+          <select class="select" id="region"><option>Anywhere</option><option>Africa</option><option>Remote-Global</option><option>Europe</option><option>North America</option><option>Asia</option></select>
+          <label class="sr" for="ptype" style="position:absolute;left:-9999px">Type</label>
+          <select class="select" id="ptype"><option>All types</option><option>Job</option><option>Internship</option><option>Fellowship</option><option>Volunteer</option></select>
+          <button class="btn btn-primary" type="submit"><svg class="ic"><use href="#i-search"/></svg>Search</button>
+        </form>
+        <div class="regions" role="group" aria-label="Quick regions">
+          <button aria-pressed="true">Africa</button>
+          <button aria-pressed="false">Remote-Global</button>
+          <button aria-pressed="false">Europe</button>
+          <button aria-pressed="false">North America</button>
+          <button aria-pressed="false">Asia</button>
+        </div>
+      </div>
+
+      <div class="latest" aria-label="Just posted">
+        <strong>Just posted</strong>
+        <div class="latest-row">
+          <div class="latest-item"><b>Backend Developer</b><span>Kora Health, 12 minutes ago</span></div>
+          <div class="latest-item"><b>Programme Intern, Climate Policy</b><span>Sahel Climate Lab, 1 hour ago</span></div>
+          <div class="latest-item"><b>Frontend Developer</b><span>Lumen Payments, 3 hours ago</span></div>
+          <div class="latest-item"><b>Community Fellowship 2027</b><span>Open Roots Foundation, 5 hours ago</span></div>
+        </div>
+      </div>
+
+      <div class="board">
+        <aside class="filters" aria-label="Filters">
+          <fieldset><legend>Type</legend>
+            <label><input type="checkbox" checked> Jobs</label>
+            <label><input type="checkbox" checked> Internships</label>
+            <label><input type="checkbox" checked> Fellowships</label>
+            <label><input type="checkbox"> Volunteer</label>
+          </fieldset>
+          <fieldset><legend>Work mode</legend>
+            <label><input type="checkbox"> Remote</label>
+            <label><input type="checkbox"> Hybrid</label>
+            <label><input type="checkbox"> Onsite</label>
+          </fieldset>
+          <fieldset><legend>Posted</legend>
+            <label><input type="checkbox"> Last 24 hours</label>
+            <label><input type="checkbox" checked> Last 7 days</label>
+            <label><input type="checkbox"> Last 30 days</label>
+          </fieldset>
+          <button class="btn btn-ghost btn-sm" type="button"><svg class="ic ic-sm"><use href="#i-bell"/></svg>Alert me about this search</button>
+        </aside>
+
+        <div>
+          <div class="board-head">
+            <h3>142 opportunities</h3>
+            <button class="btn btn-ghost btn-sm filters-btn" type="button"><svg class="ic ic-sm"><use href="#i-filter"/></svg>Filters</button>
+          </div>
+          <div class="jobs">
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">KH</div>
+              <div>
+                <h4><a href="#detail">Backend Developer (Python and Django)</a></h4>
+                <div class="job-org">Kora Health <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Job</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Remote-Global</span><span class="chip">Full-time</span><span class="chip">Closes 15 Nov</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">$2,500 to $3,500 a month</span><span class="when">12 minutes ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">SC</div>
+              <div>
+                <h4><a href="#detail">Programme Intern, Climate Policy</a></h4>
+                <div class="job-org">Sahel Climate Lab <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Internship</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Abuja, Nigeria</span><span class="chip">Hybrid</span><span class="chip">6 months</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="true"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">₦150,000 a month</span><span class="when">1 hour ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">LP</div>
+              <div>
+                <h4><a href="#detail">Frontend Developer (React)</a></h4>
+                <div class="job-org">Lumen Payments <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Job</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Lagos, Nigeria</span><span class="chip">Onsite</span><span class="chip">Full-time</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">₦900,000 to ₦1,400,000 a month</span><span class="when">3 hours ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">OR</div>
+              <div>
+                <h4><a href="#detail">Community Fellowship 2027</a></h4>
+                <div class="job-org">Open Roots Foundation <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Fellowship</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Nairobi, Kenya</span><span class="chip">Remote</span><span class="chip">Funded</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">Stipend provided</span><span class="when">5 hours ago</span></div>
+            </article>
+            <article class="job">
+              <div class="logo-tile" aria-hidden="true">TL</div>
+              <div>
+                <h4><a href="#detail">Data Analyst</a></h4>
+                <div class="job-org">Tidewater Logistics <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></div>
+                <div class="job-chips"><span class="chip chip-solid">Job</span><span class="chip"><svg class="ic ic-sm"><use href="#i-pin"/></svg>Accra, Ghana</span><span class="chip">Hybrid</span><span class="chip">Full-time</span></div>
+              </div>
+              <div class="job-side"><button class="save" aria-label="Save job" aria-pressed="false"><svg class="ic"><use href="#i-bookmark"/></svg></button><span class="pay">GH₵ 9,000 to 12,000 a month</span><span class="when">Yesterday</span></div>
+            </article>
+          </div>
+          <div class="pager">
+            <span>Showing 1 to 5 of 142</span>
+            <div><button class="btn btn-ghost btn-sm" disabled>Previous</button><button class="btn btn-primary btn-sm">1</button><button class="btn btn-ghost btn-sm">2</button><button class="btn btn-ghost btn-sm">3</button><button class="btn btn-ghost btn-sm">Next</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="follow">
+        <div>
+          <h3>Get new listings where you already are</h3>
+          <p>Follow Dubem on WhatsApp or Telegram, or create an account to get alerts for the searches you care about.</p>
+        </div>
+        <div class="acts">
+          <a class="btn btn-primary" href="#home"><svg class="ic"><use href="#i-chat"/></svg>WhatsApp channel</a>
+          <a class="btn btn-ghost" href="#home"><svg class="ic"><use href="#i-send"/></svg>Telegram</a>
+          <a class="btn btn-ghost" href="#signup"><svg class="ic"><use href="#i-bell"/></svg>Create alerts</a>
+        </div>
+      </div>
+      <footer class="foot"><span>Dubem.com. Never pay to get a job.</span><span>About, Privacy, Terms, Contact</span></footer>
+    </section>
+
+    <!-- DETAIL -->
+    <section class="panel pad" id="p-detail" role="tabpanel" aria-labelledby="t-detail" hidden>
+      <a class="crumb" href="#home"><svg class="ic ic-sm" style="transform:rotate(180deg)"><use href="#i-ext"/></svg>All opportunities</a>
+      <div class="d-head">
+        <div class="d-title">
+          <div class="logo-tile" aria-hidden="true">KH</div>
+          <div>
+            <h2>Backend Developer (Python and Django)</h2>
+            <div class="job-org" style="margin-top:6px">Kora Health <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified organization</span></div>
+          </div>
+        </div>
+        <div class="d-actions">
+          <a class="btn btn-primary" href="#detail">Apply on employer site<svg class="ic"><use href="#i-ext"/></svg></a>
+          <button class="btn btn-ghost save-wide" aria-pressed="false" type="button"><svg class="ic"><use href="#i-bookmark"/></svg>Save</button>
+          <button class="btn btn-ghost" type="button"><svg class="ic"><use href="#i-share"/></svg>Share</button>
+        </div>
+      </div>
+
+      <div class="detail">
+        <article>
+          <dl class="facts" style="margin:0 0 24px">
+            <div><dt>Type</dt><dd>Job, full-time</dd></div>
+            <div><dt>Location</dt><dd>Remote-Global</dd></div>
+            <div><dt>Salary</dt><dd>$2,500 to $3,500 a month</dd></div>
+            <div><dt>Closes</dt><dd>15 November 2026</dd></div>
+          </dl>
+          <h3>About the role</h3>
+          <p>Kora Health connects clinics across West Africa with patient records and appointment tools. You will own the API that clinics use every day, working with a small team of four engineers.</p>
+          <h3>What you will do</h3>
+          <ul>
+            <li>Design and ship Django REST endpoints for appointments, records and billing.</li>
+            <li>Keep response times low on mobile networks with slow connections.</li>
+            <li>Review pull requests and write tests for the code you ship.</li>
+          </ul>
+          <h3>What you need</h3>
+          <ul>
+            <li>Three or more years of Python and Django in production.</li>
+            <li>Comfortable with PostgreSQL, Docker and GitHub Actions.</li>
+            <li>Clear written English for async work across time zones.</li>
+          </ul>
+          <h3>How to apply</h3>
+          <p>Applications are handled on the employer's own site. Select Apply and you will open it in a new tab.</p>
+        </article>
+        <aside class="aside">
+          <div class="card">
+            <div style="display:flex;gap:12px;align-items:center"><div class="logo-tile" aria-hidden="true">KH</div><div><h3 style="margin:0">Kora Health</h3><span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified organization</span></div></div>
+            <p class="note" style="margin-top:10px">Health technology, Lagos and remote. 3 open roles on Dubem.</p>
+            <a class="btn btn-ghost btn-sm" href="#detail" style="margin-top:12px">See all roles</a>
+          </div>
+          <div class="safe">
+            <h4><svg class="ic"><use href="#i-shield"/></svg>Never pay to get a job</h4>
+            <p>Dubem listings never ask for fees or sensitive documents up front. If something looks wrong, tell us and we will review it.</p>
+            <button class="btn btn-white btn-sm" type="button"><svg class="ic ic-sm"><use href="#i-flag"/></svg>Report this listing</button>
+          </div>
+          <div class="card">
+            <h3>Similar opportunities</h3>
+            <div class="mini">
+              <div><a href="#detail">Python Developer</a><span>Tidewater Logistics, Accra</span></div>
+              <div><a href="#detail">API Engineer</a><span>Lumen Payments, Lagos</span></div>
+              <div><a href="#detail">Backend Intern</a><span>Open Roots Foundation, Remote</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- SIGN UP -->
+    <section class="panel pad" id="p-signup" role="tabpanel" aria-labelledby="t-signup" hidden>
+      <div class="two">
+        <div class="card">
+          <h2>Create your account</h2>
+          <p class="note">One account for saved jobs and alerts, or to post opportunities for your organization.</p>
+          <form class="form" onsubmit="return false">
+            <div class="role" role="group" aria-label="Account type">
+              <button type="button" data-role="seek" aria-pressed="true">I am looking</button>
+              <button type="button" data-role="hire" aria-pressed="false">I am hiring</button>
+            </div>
+            <div class="field"><label for="su-name" id="su-name-l">Full name</label><input class="input" id="su-name" value="Ada Okafor" autocomplete="name"></div>
+            <div class="field" id="su-web" hidden><label for="su-site">Organization website</label><input class="input" id="su-site" placeholder="https://yourorganization.org" inputmode="url"><span class="hint">We check the website before your first listing goes live.</span></div>
+            <div class="field"><label for="su-mail">Email</label><input class="input" id="su-mail" type="email" value="ada@example.com" autocomplete="email"></div>
+            <div class="field"><label for="su-pw">Password</label><input class="input" id="su-pw" type="password" value="correct-horse-battery" autocomplete="new-password"><span class="hint">At least 10 characters.</span></div>
+            <label class="check"><input type="checkbox" checked> I agree to the Terms and the Privacy Policy.</label>
+            <button class="btn btn-primary" type="submit">Create account</button>
+            <p class="note">Already registered? <a href="#signup">Sign in</a></p>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="mailmark"><svg class="ic"><use href="#i-mail"/></svg></div>
+          <h2 style="margin-top:14px">Check your email</h2>
+          <p style="margin-top:6px">We sent a verification link to <b>ada@example.com</b>. It expires in 24 hours.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center">
+            <button class="btn btn-primary" id="resend" type="button" disabled>Resend email</button>
+            <button class="btn btn-quiet" type="button">Use a different email</button>
+          </div>
+          <p class="note" id="resend-note" style="margin-top:8px">You can resend in 0:42</p>
+          <div class="states">
+            <div class="banner banner-ok"><svg class="ic"><use href="#i-check"/></svg><div><b>Email verified.</b> You can now save jobs and create alerts.</div></div>
+            <div class="banner banner-bad"><svg class="ic"><use href="#i-clock"/></svg><div><b>This link has expired.</b> Request a new verification email to continue.</div></div>
+          </div>
+          <p class="note" style="margin-top:12px">Until your email is verified you can browse and apply, but you cannot save jobs, create alerts or post.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section class="panel pad" id="p-account" role="tabpanel" aria-labelledby="t-account" hidden>
+      <div class="acct">
+        <nav class="side-nav" aria-label="Account">
+          <a href="#account" aria-current="page"><svg class="ic"><use href="#i-bell"/></svg>Alerts</a>
+          <a href="#account"><svg class="ic"><use href="#i-bookmark"/></svg>Saved jobs</a>
+          <a href="#account"><svg class="ic"><use href="#i-upload"/></svg>CV</a>
+          <a href="#account"><svg class="ic"><use href="#i-user"/></svg>Profile</a>
+        </nav>
+        <div class="acct-main">
+          <div>
+            <h2>Hello, Ada</h2>
+            <div class="banner banner-ok" style="margin-top:10px;display:inline-flex"><svg class="ic"><use href="#i-shield"/></svg>Email verified</div>
+          </div>
+
+          <section aria-labelledby="al-h">
+            <div class="sec-head"><h3 id="al-h">Saved searches and alerts</h3><span class="note" id="al-count">3 searches</span></div>
+            <div class="rows" id="alerts">
+              <div class="row">
+                <div class="grow"><b>Remote Django jobs</b><div class="meta"><span class="chip">Job</span><span class="chip">Remote-Global</span></div></div>
+                <div class="row-tools"><div class="seg freq" role="group" aria-label="Frequency"><button aria-pressed="true">Instant</button><button aria-pressed="false">Daily</button></div><label class="switch"><input type="checkbox" checked aria-label="Alert on"><span></span></label><button class="icon-btn del" aria-label="Delete alert"><svg class="ic"><use href="#i-trash"/></svg></button></div>
+              </div>
+              <div class="row">
+                <div class="grow"><b>Internships in Nigeria</b><div class="meta"><span class="chip">Internship</span><span class="chip">Nigeria</span></div></div>
+                <div class="row-tools"><div class="seg freq" role="group" aria-label="Frequency"><button aria-pressed="false">Instant</button><button aria-pressed="true">Daily</button></div><label class="switch"><input type="checkbox" checked aria-label="Alert on"><span></span></label><button class="icon-btn del" aria-label="Delete alert"><svg class="ic"><use href="#i-trash"/></svg></button></div>
+              </div>
+              <div class="row">
+                <div class="grow"><b>Fellowships in Africa</b><div class="meta"><span class="chip">Fellowship</span><span class="chip">Africa</span></div></div>
+                <div class="row-tools"><div class="seg freq" role="group" aria-label="Frequency"><button aria-pressed="false">Instant</button><button aria-pressed="true">Daily</button></div><label class="switch"><input type="checkbox" aria-label="Alert on"><span></span></label><button class="icon-btn del" aria-label="Delete alert"><svg class="ic"><use href="#i-trash"/></svg></button></div>
+              </div>
+            </div>
+            <form class="new-alert" id="new-alert" onsubmit="return false">
+              <div class="field"><label for="na-q">Keyword</label><input class="input" id="na-q" placeholder="For example, data analyst"></div>
+              <div class="field"><label for="na-t">Type</label><select class="select" id="na-t"><option>Job</option><option>Internship</option><option>Fellowship</option><option>Volunteer</option></select></div>
+              <div class="field"><label for="na-r">Region</label><select class="select" id="na-r"><option>Africa</option><option>Remote-Global</option><option>Europe</option><option>North America</option><option>Asia</option></select></div>
+              <button class="btn btn-primary" type="submit"><svg class="ic"><use href="#i-plus"/></svg>Add alert</button>
+            </form>
+            <p class="note" style="margin-top:8px">Alerts are sent by email. You can unsubscribe from any alert with one click.</p>
+          </section>
+
+          <section aria-labelledby="sj-h">
+            <div class="sec-head"><h3 id="sj-h">Saved jobs</h3><a href="#account">See all 7</a></div>
+            <div class="rows">
+              <div class="row"><div class="grow"><b>Programme Intern, Climate Policy</b><span class="note">Sahel Climate Lab, Abuja</span></div><div class="row-tools"><span class="pill pill-warn">Closes in 6 days</span><button class="icon-btn del" aria-label="Remove saved job"><svg class="ic"><use href="#i-trash"/></svg></button></div></div>
+              <div class="row"><div class="grow"><b>Frontend Developer (React)</b><span class="note">Lumen Payments, Lagos</span></div><div class="row-tools"><span class="pill pill-info">Closes in 3 weeks</span><button class="icon-btn del" aria-label="Remove saved job"><svg class="ic"><use href="#i-trash"/></svg></button></div></div>
+            </div>
+          </section>
+
+          <section class="dashed" aria-labelledby="cv-h">
+            <div><h3 id="cv-h" style="font-size:1.05rem">Upload your CV once</h3><p>Reuse it on every application. This arrives in a later release.</p></div>
+            <button class="btn btn-ghost" disabled type="button"><svg class="ic"><use href="#i-upload"/></svg>Upload CV</button>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- POST -->
+    <section class="panel pad" id="p-post" role="tabpanel" aria-labelledby="t-post" hidden>
+      <div class="post">
+        <div>
+          <h2>Post an opportunity</h2>
+          <p class="note">Posting as <b>Kora Health</b> <span class="verified"><svg class="ic ic-sm"><use href="#i-shield"/></svg>Verified</span></p>
+          <form class="form" onsubmit="return false">
+            <div class="grid-2">
+              <div class="field"><label for="po-type">Type</label><select class="select" id="po-type"><option>Job</option><option>Internship</option><option>Fellowship</option><option>Volunteer</option></select></div>
+              <div class="field"><label for="po-mode">Work mode</label><select class="select" id="po-mode"><option>Remote</option><option>Hybrid</option><option>Onsite</option></select></div>
+            </div>
+            <div class="field"><label for="po-title">Title</label><input class="input" id="po-title" value="Backend Developer (Python and Django)"></div>
+            <div class="grid-2">
+              <div class="field"><label for="po-country">Country</label><select class="select" id="po-country"><option>Remote-Global</option><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>United Kingdom</option></select></div>
+              <div class="field"><label for="po-city">City or region</label><input class="input" id="po-city" placeholder="Optional"></div>
+            </div>
+            <div class="grid-2">
+              <div class="field"><label for="po-pay">Salary or stipend</label><input class="input" id="po-pay" value="$2,500 to $3,500 a month"><span class="hint">Listings with pay get more applications.</span></div>
+              <div class="field"><label for="po-close">Closing date</label><input class="input" id="po-close" type="date" value="2026-11-15"></div>
+            </div>
+            <div class="field"><label for="po-desc">Description</label><textarea class="textarea" id="po-desc">Own the API that clinics use every day. Design Django REST endpoints, keep response times low on mobile networks, and review pull requests.</textarea></div>
+            <div class="field"><label for="po-link">How to apply</label><input class="input" id="po-link" value="https://kora.example/careers/backend" inputmode="url"><span class="hint">A link or an email address. Applicants never pay a fee.</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn btn-primary" type="submit">Submit for review</button><button class="btn btn-ghost" type="button">Save draft</button></div>
+          </form>
+        </div>
+        <aside class="aside">
+          <div class="card">
+            <h3>What happens next</h3>
+            <ol class="steps">
+              <li data-n="1"><b>Submitted</b><span>You get a confirmation email.</span></li>
+              <li data-n="2"><b>In review</b><span>We check the listing against our posting rules.</span></li>
+              <li data-n="3"><b>Live on Dubem</b><span>The listing appears on the board and in search.</span></li>
+              <li data-n="4"><b>Shared to channels</b><span>Posted to the channels you select below.</span></li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3>Share to</h3>
+            <div class="opts">
+              <label><input type="checkbox" checked><span>WhatsApp channel<small>Posted when the listing is approved.</small></span></label>
+              <label><input type="checkbox" disabled><span>Telegram<small>Coming soon.</small></span></label>
+            </div>
+          </div>
+          <div class="banner banner-warn"><svg class="ic"><use href="#i-flag"/></svg><div>Listings that ask applicants to pay, or request IDs or bank details, are rejected.</div></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="panel pad" id="p-admin" role="tabpanel" aria-labelledby="t-admin" hidden>
+      <h2 style="font-size:1.7rem">Overview</h2>
+      <p class="note">Last 14 days, 22 September to 5 October. Sample figures.</p>
+      <div class="tiles" style="margin-top:14px">
+        <div class="tile"><span>Page views</span><b>7,005</b><small>Across all listings</small></div>
+        <div class="tile"><span>Apply clicks</span><b>558</b><small>8.0% of views</small></div>
+        <div class="tile"><span>Live listings</span><b>142</b><small>5 expire this week</small></div>
+        <div class="tile"><span>Active alerts</span><b>391</b><small>From 187 seekers</small></div>
+      </div>
+      <div class="charts">
+        <div class="card chart"><h3>Page views per day</h3><div id="ch-views"></div></div>
+        <div class="card chart"><h3>Where visits come from</h3>
+          <div class="bars">
+            <div class="bar-row"><span>WhatsApp</span><div class="bar-track"><div class="bar-fill" style="width:46%"></div></div><b>46%</b></div>
+            <div class="bar-row"><span>Direct</span><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><b>21%</b></div>
+            <div class="bar-row"><span>Telegram</span><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><b>18%</b></div>
+            <div class="bar-row"><span>Search</span><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><b>15%</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="card chart" style="margin-top:14px"><h3>Apply clicks per day</h3><div id="ch-clicks"></div></div>
+
+      <div class="sec-head" style="margin-top:28px"><h3 style="font-size:1.25rem">Moderation queue</h3><span class="note">4 waiting for review</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Listing</th><th>Organization</th><th>Submitted</th><th>Checks</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><div class="t">Data Entry Clerk</div><div class="s">Job, Lagos, Nigeria</div></td><td>Brightpath Staffing<div class="s">Email confirmed</div></td><td>10 minutes ago</td><td><span class="pill pill-bad">Asks for a fee</span></td><td><div class="acts-cell"><button class="btn btn-ghost btn-sm">Edit</button><button class="btn btn-primary btn-sm">Reject</button></div></td></tr>
+            <tr><td><div class="t">Marketing Intern</div><div class="s">Internship, Remote</div></td><td>Greenleaf Studio<div class="s">Email confirmed</div></td><td>42 minutes ago</td><td><span class="pill pill-warn">Personal email only</span></td><td><div class="acts-cell"><button class="btn btn-ghost btn-sm">Edit</button><button class="btn btn-ghost btn-sm">Reject</button><button class="btn btn-primary btn-sm">Approve</button></div></td></tr>
+            <tr><td><div class="t">Field Researcher</div><div class="s">Fellowship, Nairobi, Kenya</div></td><td>Open Roots Foundation<div class="s">Verified</div></td><td>2 hours ago</td><td><span class="pill pill-ok">All clear</span></td><td><div class="acts-cell"><button class="btn btn-ghost btn-sm">Edit</button><button class="btn btn-ghost btn-sm">Reject</button><button class="btn btn-primary btn-sm">Approve</button></div></td></tr>
+            <tr><td><div class="t">Accountant</div><div class="s">Job, Accra, Ghana</div></td><td>Tidewater Logistics<div class="s">Verified</div></td><td>3 hours ago</td><td><span class="pill pill-ok">All clear</span></td><td><div class="acts-cell"><button class="btn btn-ghost btn-sm">Edit</button><button class="btn btn-ghost btn-sm">Reject</button><button class="btn btn-primary btn-sm">Approve</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:8px">Approving a listing publishes it and sends it to the selected channels. A failed channel post never blocks the listing.</p>
+    </section>
+  </div>
+
+  <p class="note" id="sample-note">All organizations, listings and figures on these screens are sample content for design review.</p>
+
+  <!-- ================= STYLE GUIDE ================= -->
+  <section class="guide" id="guide" role="tabpanel" aria-labelledby="t-guide" hidden>
+    <div>
+      <h2>Colour</h2>
+      <p class="note" style="margin-bottom:12px">Blue carries every action. Semantic colours appear only for status.</p>
+      <div class="swatches">
+        <div class="sw"><i style="background:#0A1B4D"></i><div><b>Ink</b><span>#0A1B4D, text and the footer panel</span></div></div>
+        <div class="sw"><i style="background:#12348F"></i><div><b>Deep blue</b><span>#12348F, hover states</span></div></div>
+        <div class="sw"><i style="background:#1F4FE0"></i><div><b>Dubem blue</b><span>#1F4FE0, buttons, links, hero</span></div></div>
+        <div class="sw"><i style="background:#3A6BFF"></i><div><b>Bright blue</b><span>#3A6BFF, focus rings</span></div></div>
+        <div class="sw"><i style="background:#C9D8FF"></i><div><b>Soft blue</b><span>#C9D8FF, borders on controls</span></div></div>
+        <div class="sw"><i style="background:#E3EBFF"></i><div><b>Tint</b><span>#E3EBFF, chips and selected states</span></div></div>
+        <div class="sw"><i style="background:#F3F6FF"></i><div><b>Surface</b><span>#F3F6FF, page and panel ground</span></div></div>
+        <div class="sw"><i style="background:#FFFFFF;border-bottom:1px solid #D5DEF5"></i><div><b>White</b><span>#FFFFFF, cards and the site</span></div></div>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <h2>Type</h2>
+        <div class="type-row"><small>Display, Bricolage Grotesque 700</small><span style="font-family:var(--font-display);font-size:2.4rem;font-weight:700;line-height:1.1">Find your next role</span></div>
+        <div class="type-row"><small>Heading, 20 to 28</small><span style="font-family:var(--font-display);font-size:1.4rem;font-weight:600">Saved searches and alerts</span></div>
+        <div class="type-row"><small>Body, Figtree 400, 15 over 22</small><span>Every listing is reviewed before it goes live.</span></div>
+        <div class="type-row"><small>Small, Figtree 500, 13</small><span class="note">12 minutes ago</span></div>
+      </div>
+      <div>
+        <h2>Components</h2>
+        <h3 style="margin-top:8px">Buttons</h3>
+        <div class="demo"><button class="btn btn-primary">Primary</button><button class="btn btn-ghost">Secondary</button><button class="btn btn-quiet">Quiet</button><button class="btn btn-primary" disabled>Disabled</button></div>
+        <h3 style="margin-top:16px">Chips and status</h3>
+        <div class="demo"><span class="chip chip-solid">Internship</span><span class="chip">Remote-Global</span><span class="pill pill-info">Pending</span><span class="pill pill-ok">Approved</span><span class="pill pill-warn">Closes soon</span><span class="pill pill-bad">Rejected</span></div>
+        <h3 style="margin-top:16px">Field</h3>
+        <div class="field" style="max-width:320px"><label for="g-f">Email</label><input class="input" id="g-f" value="ada@example.com"><span class="hint">We send a verification link.</span></div>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <h2>Build notes</h2>
+        <ul>
+          <li>Design widths are 390, 768 and 1200. The layout reflows on the width of the site area, using container queries.</li>
+          <li>Start the public pages from the ThemeWagon JobEntry template: its job list, job detail and application form layouts map to Home, Job detail and Post an opportunity.</li>
+          <li>Sign up, Account and Admin have no matching template page. Build them from the components on this page, and keep the Django admin for moderation until the custom queue is ready.</li>
+          <li>Use one Bootstrap version only, or drop it and use these tokens as CSS variables.</li>
+          <li>Every control needs a visible focus state and a label. Status never relies on colour alone, so pills carry text.</li>
+        </ul>
+      </div>
+      <div>
+        <h2>React components</h2>
+        <ul>
+          <li><code>NavBar</code>, <code>SearchHero</code>, <code>FilterSidebar</code>, <code>JobRow</code>, <code>VerifiedBadge</code></li>
+          <li><code>SaveButton</code>, <code>AlertRow</code>, <code>AlertForm</code>, <code>FrequencyToggle</code></li>
+          <li><code>SignUpForm</code>, <code>VerifyEmailCard</code>, <code>Banner</code></li>
+          <li><code>PostForm</code>, <code>ReviewSteps</code>, <code>ShareOptions</code></li>
+          <li><code>StatTile</code>, <code>AreaChart</code>, <code>SourceBars</code>, <code>ModerationTable</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var frame = $('#frame'), guide = $('#guide'), device = $('#device'), note = $('#sample-note');
+  var auth = { home: 'guest', detail: 'guest', signup: 'guest', account: 'user', post: 'user', admin: 'user' };
+
+  function show(tab) {
+    if (!$('#t-' + tab)) tab = 'home';
+    $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === tab)); });
+    var isGuide = tab === 'guide';
+    frame.hidden = isGuide; note.hidden = isGuide; device.hidden = isGuide; guide.hidden = !isGuide;
+    $$('.panel').forEach(function (p) { p.hidden = p.id !== 'p-' + tab; });
+    if (!isGuide) frame.dataset.auth = auth[tab] || 'guest';
+    try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+  }
+  $$('.tabs button').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.tab); }); });
+  $$('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var t = a.getAttribute('href').slice(1);
+      if ($('#t-' + t)) { e.preventDefault(); show(t); window.scrollTo(0, 0); }
+    });
+  });
+
+  $$('#device button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      frame.dataset.device = b.dataset.device;
+      $$('#device button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+
+  /* region chips */
+  $$('.regions button').forEach(function (b) {
+    b.addEventListener('click', function () { $$('.regions button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); });
+  });
+
+  /* save buttons */
+  document.addEventListener('click', function (e) {
+    var s = e.target.closest('.save, .save-wide');
+    if (s) { s.setAttribute('aria-pressed', String(s.getAttribute('aria-pressed') !== 'true')); }
+    var f = e.target.closest('.freq button');
+    if (f) { $$('button', f.parentNode).forEach(function (x) { x.setAttribute('aria-pressed', String(x === f)); }); }
+    var d = e.target.closest('.del');
+    if (d) {
+      var row = d.closest('.row'); if (row) { row.remove(); countAlerts(); }
+    }
+  });
+
+  /* sign up role */
+  $$('.role button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('.role button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      var hire = b.dataset.role === 'hire';
+      $('#su-name-l').textContent = hire ? 'Organization name' : 'Full name';
+      $('#su-name').value = hire ? 'Kora Health' : 'Ada Okafor';
+      $('#su-web').hidden = !hire;
+    });
+  });
+
+  /* resend countdown */
+  var left = 42, timer = null, resend = $('#resend'), rn = $('#resend-note');
+  function tick() {
+    if (left <= 0) { clearInterval(timer); timer = null; resend.disabled = false; rn.textContent = 'You can resend now.'; return; }
+    rn.textContent = 'You can resend in 0:' + (left < 10 ? '0' : '') + left; left -= 1;
+  }
+  function startTimer(n) { left = n; resend.disabled = true; if (timer) clearInterval(timer); tick(); timer = setInterval(tick, 1000); }
+  resend.addEventListener('click', function () { startTimer(60); });
+  startTimer(42);
+
+  /* add alert */
+  function countAlerts() { var n = $$('#alerts .row').length; $('#al-count').textContent = n + (n === 1 ? ' search' : ' searches'); }
+  $('#new-alert').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var q = $('#na-q').value.trim(), t = $('#na-t').value, r = $('#na-r').value;
+    var row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = '<div class="grow"><b></b><div class="meta"><span class="chip"></span><span class="chip"></span></div></div>' +
+      '<div class="row-tools"><div class="seg freq" role="group" aria-label="Frequency"><button aria-pressed="false">Instant</button><button aria-pressed="true">Daily</button></div>' +
+      '<label class="switch"><input type="checkbox" checked aria-label="Alert on"><span></span></label>' +
+      '<button class="icon-btn del" aria-label="Delete alert"><svg class="ic"><use href="#i-trash"/></svg></button></div>';
+    $('b', row).textContent = q || (t + 's in ' + r);
+    var chips = $$('.chip', row); chips[0].textContent = t; chips[1].textContent = r;
+    $('#alerts').insertBefore(row, $('#alerts').firstChild);
+    $('#na-q').value = ''; countAlerts();
+  });
+
+  /* charts */
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(n, a, p) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+  function area(host, data, labels, yMax, ticks) {
+    var W = 640, H = 230, L = 44, R = 14, T = 16, B = 30, pw = W - L - R, ph = H - T - B;
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Line chart of daily totals, ' + labels[0] + ' to ' + labels[labels.length - 1] });
+    var X = function (i) { return L + pw * i / (data.length - 1); };
+    var Y = function (v) { return T + ph * (1 - v / yMax); };
+    ticks.forEach(function (t) {
+      el('line', { x1: L, x2: W - R, y1: Y(t), y2: Y(t), stroke: 'var(--line)', 'stroke-width': 1 }, svg);
+      var tx = el('text', { x: L - 8, y: Y(t) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)' }, svg); tx.textContent = t;
+    });
+    var line = data.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
+    el('path', { d: line + ' L' + X(data.length - 1).toFixed(1) + ' ' + Y(0) + ' L' + X(0).toFixed(1) + ' ' + Y(0) + ' Z', fill: 'var(--blue-100)' }, svg);
+    el('path', { d: line, fill: 'none', stroke: 'var(--blue-600)', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+    labels.forEach(function (lb, i) {
+      if (i % 3 === 0 || i === labels.length - 1) {
+        var tx = el('text', { x: X(i), y: H - 8, 'text-anchor': i === labels.length - 1 ? 'end' : (i === 0 ? 'start' : 'middle'), 'font-size': 11, fill: 'var(--muted)' }, svg); tx.textContent = lb;
+      }
+    });
+    var last = data.length - 1;
+    el('circle', { cx: X(last), cy: Y(data[last]), r: 5, fill: 'var(--white)', stroke: 'var(--blue-600)', 'stroke-width': 3 }, svg);
+    var vt = el('text', { x: X(last) - 10, y: Y(data[last]) - 8, 'text-anchor': 'end', 'font-size': 12, 'font-weight': 700, fill: 'var(--blue-950)' }, svg); vt.textContent = data[last];
+    host.appendChild(svg);
+  }
+  var labels = []; for (var d = 0; d < 14; d++) { var dt = new Date(2026, 8, 22 + d); labels.push(dt.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]); }
+  area($('#ch-views'), [310,340,295,420,480,455,390,520,560,610,575,640,690,720], labels, 800, [0,200,400,600,800]);
+  area($('#ch-clicks'), [22,25,19,31,38,35,29,40,44,52,47,55,58,63], labels, 80, [0,20,40,60,80]);
+
+  var h = (location.hash || '').slice(1);
+  show(h && $('#t-' + h) ? h : 'home');
+})();
+</script>
+
+</body></html>
