@@ -10,12 +10,14 @@ export default function Home() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [region, setRegion] = useState("");
+  const [type, setType] = useState("");
 
   function search(e) {
     e.preventDefault();
     const p = new URLSearchParams();
     if (q) p.set("q", q);
     if (region) p.set("region", region);
+    if (type) p.set("type", type);
     navigate(`/opportunities${p.toString() ? `?${p}` : ""}`);
   }
 
@@ -27,13 +29,25 @@ export default function Home() {
 
         <form className="searchbar" role="search" onSubmit={search}>
           <label className="sr" htmlFor="q">Search</label>
-          <input className="input" id="q" type="search" placeholder="Job title, skill or organization"
+          <input className="input" id="q" type="search" autoComplete="off"
+                 placeholder="Job title, skill or organization"
                  value={q} onChange={(e) => setQ(e.target.value)} />
+
           <label className="sr" htmlFor="region">Region</label>
           <select className="select" id="region" value={region} onChange={(e) => setRegion(e.target.value)}>
             <option value="">Anywhere</option>
             {REGIONS.map((r) => <option key={r}>{r}</option>)}
           </select>
+
+          <label className="sr" htmlFor="ptype">Type</label>
+          <select className="select" id="ptype" value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="">All types</option>
+            <option value="job">Jobs</option>
+            <option value="internship">Internships</option>
+            <option value="fellowship">Fellowships</option>
+            <option value="volunteer">Volunteer</option>
+          </select>
+
           <button className="btn btn-primary" type="submit"><Icon name="search" />Search</button>
         </form>
 

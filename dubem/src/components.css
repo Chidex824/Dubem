@@ -285,3 +285,25 @@ button.avatar:hover { background: var(--blue-800); }
   .d-actions .btn-primary { flex: 1 1 100%; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* search bar */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.searchbar {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+  max-width: 920px;
+  margin-top: 24px;
+  padding: 8px;
+  background: var(--white);
+  border-radius: 14px;
+}
+.searchbar .input,
+.searchbar .select { min-height: 48px; border-color: transparent; background: var(--blue-50); }
+.searchbar .btn { min-height: 48px; padding-inline: 26px; }
+
+@media (max-width: 780px) {
+  .searchbar { grid-template-columns: 1fr; }
+}
