@@ -1,3 +1,16 @@
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+
+export default function JobDetail() {
+  const { id } = useParams();
+  const [jobDetails, setJobDetails] = useState(null);
+
+  useState(() => {
+    const detail = details[id] || fallbackDetail;
+    setJobDetails(detail);
+  }, [id])
+};
+
 export const details = {
   "backend-developer-python-django": {
     typeLine: "Job, full-time",
