@@ -32,22 +32,22 @@
   <body>
     <div id="root">
         <!-- ================= SITE FRAME ================= -->
-  <div class="frame" id="frame" data-device="desktop" data-auth="guest">
+  <div className="frame" id="frame" data-device="desktop" data-auth="guest">
     <header class="nav">
       <a class="logo" href="#home"><i>D</i>Dubem</a>
       <nav class="nav-links" aria-label="Main">
         <a href="#home" aria-current="page">Opportunities</a>
-        <a href="#home">Jobs</a>
-        <a href="#home">Internships</a>
-        <a href="#home">Fellowships</a>
-        <a href="#post">For organizations</a>
+        <a href="#jobs">Jobs</a>
+        <a href="#internships">Internships</a>
+        <a href="#fellowships">Fellowships</a>
+        <a href="#for-organizations">For organizations</a>
       </nav>
-      <div class="nav-actions nav-guest">
-        <a class="btn btn-ghost btn-sm" href="#signup">Sign in</a>
+      <div className="nav-actions nav-guest">
+        <a class="btn btn-ghost btn-sm" href="#signin">Sign in</a>
         <a class="btn btn-primary btn-sm" href="#signup">Create account</a>
         <button class="menu-btn" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
       </div>
-      <div class="nav-actions nav-user">
+      <div className="nav-actions nav-user">
         <a class="btn btn-ghost btn-sm" href="#post"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Post</a>
         <span class="avatar" aria-label="Signed in as Ada">AO</span>
         <button class="menu-btn" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
@@ -56,15 +56,15 @@
 
     <!-- HOME -->
     <section class="panel" id="p-home" role="tabpanel" aria-labelledby="t-home">
-      <div class="hero">
+      <div className="hero">
         <h2>Opportunities from verified organizations, in one place</h2>
         <p class="sub">Jobs, internships and fellowships across Africa and the world. Every listing is reviewed before it goes live.</p>
         <form class="searchbar" onsubmit="return false" role="search">
-          <label class="sr" for="q" style="position:absolute;left:-9999px">Search</label>
+          <label class="sr" for="q" style="position:absolute;clip:rect(0,0,0,0)">Search</label>
           <input class="input" id="q" type="search" placeholder="Job title, skill or organization">
-          <label class="sr" for="region" style="position:absolute;left:-9999px">Region</label>
+          <label class="sr" for="region" style="position:absolute;right:-9999px">Region</label>
           <select class="select" id="region"><option>Anywhere</option><option>Africa</option><option>Remote-Global</option><option>Europe</option><option>North America</option><option>Asia</option></select>
-          <label class="sr" for="ptype" style="position:absolute;left:-9999px">Type</label>
+          <label class="sr" for="ptype" style="position:absolute;right:-9999px">Type</label>
           <select class="select" id="ptype"><option>All types</option><option>Job</option><option>Internship</option><option>Fellowship</option><option>Volunteer</option></select>
           <button class="btn btn-primary" type="submit"><svg class="ic"><use href="#i-search"/></svg>Search</button>
         </form>
