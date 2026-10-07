@@ -48,7 +48,7 @@ export default function SiteHeader() {
         <div className="nav-actions">
           {role === "guest" && (
             <span className="nav-pair">
-              <Link className="btn btn-ghost btn-sm" to="/signup">Sign in</Link>
+              <Link className="btn btn-ghost btn-sm" to="/login">Sign in</Link>
               <Link className="btn btn-primary btn-sm" to="/signup">Create account</Link>
             </span>
           )}
@@ -72,7 +72,7 @@ export default function SiteHeader() {
 
           <button className="menu-btn" type="button" aria-label={open === "sheet" ? "Close menu" : "Open menu"}
                   aria-expanded={open === "sheet"} onClick={() => toggle("sheet")}>
-            <Icon name={open === "sheet" ? "close" : "menu"} />
+            <Icon name={open === "sheet" ? "x" : "menu"} />
           </button>
 
           {/* temporary: delete before launch */}
@@ -95,7 +95,7 @@ export default function SiteHeader() {
         <div className="ms-acct">
           {role === "guest" ? (
             <>
-              <Link className="btn btn-ghost" to="/signup">Sign in</Link>
+              <Link className="btn btn-ghost" to="/login">Sign in</Link>
               <Link className="btn btn-primary" to="/signup">Create account</Link>
             </>
           ) : (
