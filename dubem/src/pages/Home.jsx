@@ -1,39 +1,23 @@
-import { useSearchParams } from "react-router-dom";
-import { jobs } from "../mock/Jobs.js";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { jobs } from "../mock/jobs.js";
 import JobCard from "../components/JobCard.jsx";
 import Icon from "../components/Icon.jsx";
 
 const REGIONS = ["Africa", "Remote-Global", "Europe", "North America", "Asia"];
-const TYPES = [["job", "Jobs"], ["internship", "Internships"], ["fellowship", "Fellowships"], ["volunteer", "Volunteer"]];
-const MODES = [["remote", "Remote"], ["hybrid", "Hybrid"], ["onsite", "Onsite"]];
 
-export default function Home({ type }) {
-  const [params, setParams] = useSearchParams();
+export default function Home() {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const [region, setRegion] = useState("");
 
-  const q = params.get("q") || "";
-  const region = params.get("region") || "";
-  const list = (key) => (params.get(key) ? params.get(key).split(",") : []);
-  const types = type ? [type] : list("type");   // /jobs fixes the type, /opportunities uses ?type=
-  const modes = list("mode");
-
-  function setParam(key, value) {
-    const next = new URLSearchParams(params);
-    if (value) next.set(key, value); else next.delete(key);
-    setParams(next, { replace: true });
+  function search(e) {
+    e.preventDefault();
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (region) p.set("region", region);
+    navigate(`/opportunities${p.toString() ? `?${p}` : ""}`);
   }
-
-  function toggleInList(key, value) {
-    const current = list(key);
-    const updated = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
-    setParam(key, updated.join(","));
-  }
-
-  const shown = jobs.filter((j) =>
-    (!types.length || types.includes(j.type)) &&
-    (!modes.length || modes.includes(j.mode)) &&
-    (!region || j.region === region) &&
-    (!q || `${j.title} ${j.org}`.toLowerCase().includes(q.toLowerCase()))
-  );
 
   return (
     <>
@@ -41,12 +25,12 @@ export default function Home({ type }) {
         <h2>Opportunities from verified organizations, in one place</h2>
         <p className="sub">Jobs, internships and fellowships across Africa and the world. Every listing is reviewed before it goes live.</p>
 
-        <form className="searchbar" role="search" onSubmit={(e) => e.preventDefault()}>
+        <form className="searchbar" role="search" onSubmit={search}>
           <label className="sr" htmlFor="q">Search</label>
           <input className="input" id="q" type="search" placeholder="Job title, skill or organization"
-                 value={q} onChange={(e) => setParam("q", e.target.value)} />
+                 value={q} onChange={(e) => setQ(e.target.value)} />
           <label className="sr" htmlFor="region">Region</label>
-          <select className="select" id="region" value={region} onChange={(e) => setParam("region", e.target.value)}>
+          <select className="select" id="region" value={region} onChange={(e) => setRegion(e.target.value)}>
             <option value="">Anywhere</option>
             {REGIONS.map((r) => <option key={r}>{r}</option>)}
           </select>
@@ -55,33 +39,41 @@ export default function Home({ type }) {
 
         <div className="regions" role="group" aria-label="Quick regions">
           {REGIONS.map((r) => (
-            <button key={r} aria-pressed={region === r} onClick={() => setParam("region", region === r ? "" : r)}>{r}</button>
+            <button key={r} aria-pressed="false" onClick={() => navigate(`/opportunities?region=${encodeURIComponent(r)}`)}>{r}</button>
           ))}
         </div>
       </div>
 
-      <div className="board">
-        <aside className="filters" aria-label="Filters">
-          <fieldset><legend>Type</legend>
-            {TYPES.map(([v, label]) => (
-              <label key={v}><input type="checkbox" checked={types.includes(v)} disabled={!!type}
-                                    onChange={() => toggleInList("type", v)} /> {label}</label>
-            ))}
-          </fieldset>
-          <fieldset><legend>Work mode</legend>
-            {MODES.map(([v, label]) => (
-              <label key={v}><input type="checkbox" checked={modes.includes(v)}
-                                    onChange={() => toggleInList("mode", v)} /> {label}</label>
-            ))}
-          </fieldset>
-        </aside>
+      <div className="latest" aria-label="Just posted">
+        <strong>Just posted</strong>
+        <div className="latest-row">
+          {jobs.slice(0, 4).map((j) => (
+            <div className="latest-item" key={j.slug}>
+              <b>{j.title}</b><span>{j.org}, {j.when}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
+      <div style={{ padding: "28px 24px" }}>
+        <div className="sec-head">
+          <h3>Latest opportunities</h3>
+          <Link to="/opportunities">See all</Link>
+        </div>
+        <div className="jobs">
+          {jobs.slice(0, 5).map((j) => <JobCard key={j.slug} job={j} />)}
+        </div>
+      </div>
+
+      <div className="follow">
         <div>
-          <div className="board-head"><h3>{shown.length} opportunities</h3></div>
-          <div className="jobs">
-            {shown.length === 0 && <p className="note">Nothing matches these filters.</p>}
-            {shown.map((j) => <JobCard key={j.slug} job={j} />)}
-          </div>
+          <h3>Get new listings where you already are</h3>
+          <p>Follow Dubem on WhatsApp or Telegram, or create an account to get alerts for the searches you care about.</p>
+        </div>
+        <div className="acts">
+          <a className="btn btn-primary" href="#">WhatsApp channel</a>
+          <a className="btn btn-ghost" href="#">Telegram</a>
+          <Link className="btn btn-ghost" to="/signup"><Icon name="bell" small />Create alerts</Link>
         </div>
       </div>
     </>
