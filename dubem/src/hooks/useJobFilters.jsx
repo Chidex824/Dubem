@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { jobs } from "../mock/jobs.js";
+import { jobs } from "../mock/Jobs.js";
 
 export default function useJobFilters(type) {
   const [params, setParams] = useSearchParams();

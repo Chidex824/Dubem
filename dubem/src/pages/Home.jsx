@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { jobs } from "../mock/jobs.js";
+import { jobs } from "../mock/Jobs.js";
 import JobCard from "../components/JobCard.jsx";
 import Icon from "../components/Icon.jsx";
 
