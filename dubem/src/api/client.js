@@ -64,14 +64,6 @@ export const closeListing = (slug) => request(`/jobs/${slug}/close/`, { method: 
 export const myStats = (days = 7) => request(`/my/stats/?days=${days}`);
 export const myOrg = () => request("/orgs/me/");
 
-// ---- admin ----
-export const adminQueue = () => request("/admin/queue/");
-export const approveListing = (slug) => request(`/admin/jobs/${slug}/approve/`, { method: "POST" });
-export const rejectListing = (slug, reason) => request(`/admin/jobs/${slug}/reject/`, { method: "POST", body: { reason } });
-export const adminAnalytics = (days = 7) => request(`/admin/analytics/?days=${days}`);
-export const adminOrgs = () => request("/admin/orgs/");
-export const orgAction = (slug, action) => request(`/admin/orgs/${slug}/${action}/`, { method: "POST" }); // verify|unverify|suspend|unsuspend
-
 // ---- analytics (fire and forget, never breaks a page) ----
 export const track = (slug, type, source) =>
   request("/events/", { method: "POST", body: { slug, type, source }, auth: false }).catch(() => {});

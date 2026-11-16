@@ -20,10 +20,6 @@ export const MENUS = {
   },
   admin: {
     badge: ["info", "Admin"],
-    items: [
-      ["/admin", "shield", "Moderation queue"],
-      ["/admin", "chart", "Analytics"],
-      ["/post", "plus", "Post for an organization"],
-    ],
+    items: [],
   },
 };

@@ -25,7 +25,7 @@ const REJECTS = [
 
 export default function ForOrgs() {
   const { role } = useAuth();
-  const canPost = role === "org" || role === "admin";
+  const canPost = role === "org";
 
   // one button that changes with who is looking
   const action = (white = false) =>

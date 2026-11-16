@@ -9,7 +9,6 @@ import Signup from "./pages/Signup.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
 import Account from "./pages/Account.jsx";
 import Post from "./pages/Post.jsx";
-import Admin from "./pages/Admin.jsx";
 import RequiredRole from "./auth/RequiredRole.jsx";
 
 export default function App() {
@@ -27,8 +26,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/account" element={<RequiredRole roles={["seeker"]}><Account /></RequiredRole>} />
-        <Route path="/post" element={<RequiredRole roles={["org", "admin"]}><Post /></RequiredRole>} />
-        <Route path="/admin" element={<RequiredRole roles={["admin"]}><Admin /></RequiredRole>} />
+        <Route path="/post" element={<RequiredRole roles={["org"]}><Post /></RequiredRole>} />
       </Route>
     </Routes>
   );
