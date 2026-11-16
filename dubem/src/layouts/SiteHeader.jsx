@@ -13,18 +13,16 @@ const LINKS = [
 ];
 
 export default function SiteHeader() {
-  const { user, role, signInAs, signOut } = useAuth();
-  const [open, setOpen] = useState(null);          // null | "avatar" | "sheet"
+  const { user, role, signOut } = useAuth();
+  const [open, setOpen] = useState(null);
   const headerRef = useRef(null);
   const location = useLocation();
 
   const initials = user ? user.name.split(" ").map((w) => w[0]).slice(0, 2).join("") : "";
   const toggle = (which) => setOpen(open === which ? null : which);
 
-  // close when the page changes
   useEffect(() => setOpen(null), [location.pathname]);
 
-  // close with Escape or a click outside the header
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setOpen(null);
     const onClick = (e) => headerRef.current && !headerRef.current.contains(e.target) && setOpen(null);
@@ -74,18 +72,9 @@ export default function SiteHeader() {
                   aria-expanded={open === "sheet"} onClick={() => toggle("sheet")}>
             <Icon name={open === "sheet" ? "x" : "menu"} />
           </button>
-
-          {/* temporary: delete before launch */}
-          <select value={role} onChange={(e) => signInAs(e.target.value)} aria-label="View as">
-            <option value="guest">Visitor</option>
-            <option value="seeker">Seeker</option>
-            <option value="org">Organization</option>
-            <option value="admin">Admin</option>
-          </select>
         </div>
       </div>
 
-      {/* phone menu */}
       <div className={open === "sheet" ? "msheet open" : "msheet"}>
         <div className="ms-links">
           {LINKS.map(([to, label]) => (

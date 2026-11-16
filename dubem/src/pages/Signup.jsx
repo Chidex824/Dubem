@@ -1,35 +1,50 @@
-import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import Icon from "../components/Icon.jsx";
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Field from "../components/Field.jsx";
+import { signup as signupRequest } from "../api/client.js";
 
 export default function Signup() {
   const [params] = useSearchParams();
-  const status = params.get("status");               // ?status=verified or ?status=expired
+  const status = params.get("status");
+  const navigate = useNavigate();
 
   const [hiring, setHiring] = useState(false);
   const [form, setForm] = useState({ name: "", site: "", email: "", password: "", agree: false });
-  const [sentTo, setSentTo] = useState(null);         // email address once submitted
-  const [seconds, setSeconds] = useState(0);          // resend countdown
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
-  useEffect(() => {
-    if (seconds <= 0) return;
-    const t = setTimeout(() => setSeconds(seconds - 1), 1000);
-    return () => clearTimeout(t);
-  }, [seconds]);
-
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    setSentTo(form.email);
-    setSeconds(60);
-  }
+    setError("");
+    setSubmitting(true);
 
-  const mmss = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+    try {
+      const payload = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        terms: form.agree,
+        hiring,
+      };
+
+      if (hiring) {
+        payload.organization = form.name.trim();
+        payload.website = form.site.trim();
+      }
+
+      await signupRequest(payload);
+      navigate("/verify-email?status=sent");
+    } catch (err) {
+      setError(err.message || "Could not create your account.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <section className="panel pad">
@@ -37,6 +52,10 @@ export default function Signup() {
         <div className="card">
           <h2>Create your account</h2>
           <p className="note">One account for saved jobs and alerts, or to post opportunities for your organization.</p>
+
+          {status === "verified" && (
+            <div className="banner banner-ok"><div><b>Email verified.</b> You can now sign in and continue.</div></div>
+          )}
 
           <form className="form" onSubmit={submit}>
             <div className="role" role="group" aria-label="Account type">
@@ -64,8 +83,12 @@ export default function Signup() {
               I agree to the Terms and the Privacy Policy.
             </label>
 
-            <button className="btn btn-primary" type="submit">Create account</button>
-            <p className="note">Already registered? <Link to="/signup">Sign in</Link></p>
+            {error && <div className="banner banner-bad"><div>{error}</div></div>}
+
+            <button className="btn btn-primary" type="submit" disabled={submitting}>
+              {submitting ? "Creating account..." : "Create account"}
+            </button>
+            <p className="note">Already registered? <Link to="/login">Sign in</Link></p>
           </form>
         </div>
       </div>

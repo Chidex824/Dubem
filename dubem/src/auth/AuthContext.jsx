@@ -1,23 +1,68 @@
-import { createContext, useContext, useState } from "react";
-
-const USERS = {
-  guest:  null,
-  seeker: { name: "Ada Okafor",  email: "ada@example.com",     role: "seeker" },
-  org:    { name: "Kora Health", email: "careers@kora.example", role: "org" },
-  admin:  { name: "Dubem admin", email: "admin@dubem.com",      role: "admin" },
-};
+import { createContext, useContext, useEffect, useState } from "react";
+import { getToken, logout as apiLogout, me, setToken as persistToken } from "../api/client.js";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [role, setRole] = useState("guest");      // change "guest" to test other views
-  const user = USERS[role];
+  const [token, setTokenState] = useState(getToken());
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(Boolean(getToken()));
+
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    me()
+      .then((data) => {
+        if (active) {
+          setUser(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          persistToken(null);
+          setTokenState(null);
+          setUser(null);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  const signIn = (nextUser, nextToken) => {
+    if (nextToken) {
+      persistToken(nextToken);
+      setTokenState(nextToken);
+    }
+    setUser(nextUser);
+  };
+
+  const signOut = async () => {
+    try {
+      await apiLogout();
+    } catch {
+      // ignore server-side logout failure; clear client session anyway
+    }
+    persistToken(null);
+    setTokenState(null);
+    setUser(null);
+  };
 
   const value = {
-    user,                                          // null when signed out
-    role,                                          // "guest" | "seeker" | "org" | "admin"
-    signInAs: (r) => setRole(r),
-    signOut: () => setRole("guest"),
+    user,
+    token,
+    role: user?.role ?? "guest",
+    loading,
+    signIn,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

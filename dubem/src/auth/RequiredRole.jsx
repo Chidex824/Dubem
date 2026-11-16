@@ -6,7 +6,7 @@ export default function RequireRole({ roles, children }) {
   const location = useLocation();
 
   if (role === "guest") {
-    return <Navigate to="/signup" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   if (!roles.includes(role)) {
     return <Navigate to="/" replace />;

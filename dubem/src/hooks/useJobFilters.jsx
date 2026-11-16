@@ -1,8 +1,24 @@
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { jobs } from "../mock/Jobs.js";
+import { getJobs } from "../api/Jobs.js";
 
 export default function useJobFilters(type) {
   const [params, setParams] = useSearchParams();
+  const [jobs, setJobs] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    getJobs()
+      .then((data) => {
+        if (active) setJobs(data);
+      })
+      .catch(() => {
+        if (active) setJobs([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const q = params.get("q") || "";
   const region = params.get("region") || "";

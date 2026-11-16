@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { jobs } from "../mock/Jobs.js";
+import { getJobs } from "../api/Jobs.js";
 import JobCard from "../components/JobCard.jsx";
 import Icon from "../components/Icon.jsx";
 
@@ -11,6 +11,21 @@ export default function Home() {
   const [q, setQ] = useState("");
   const [region, setRegion] = useState("");
   const [type, setType] = useState("");
+  const [jobs, setJobs] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    getJobs()
+      .then((data) => {
+        if (active) setJobs(data);
+      })
+      .catch(() => {
+        if (active) setJobs([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function search(e) {
     e.preventDefault();

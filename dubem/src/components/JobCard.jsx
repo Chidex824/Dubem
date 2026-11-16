@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "./Icon.jsx";
-import { typeLabel } from "../mock/Jobs.js";
 
 export default function JobCard({ job }) {
   const [saved, setSaved] = useState(false);
+  const jobType = job.typeLabel || "Role";
+  const jobMode = job.modeLabel || (typeof job.mode === "string" ? job.mode[0].toUpperCase() + job.mode.slice(1) : "");
+  const extras = Array.isArray(job.extra) ? job.extra : [];
 
   return (
     <article className="job">
@@ -16,10 +18,10 @@ export default function JobCard({ job }) {
           <span className="verified"><Icon name="shield" small />Verified</span>
         </div>
         <div className="job-chips">
-          <span className="chip chip-solid">{typeLabel[job.type]}</span>
+          <span className="chip chip-solid">{jobType}</span>
           <span className="chip"><Icon name="pin" small />{job.location}</span>
-          <span className="chip">{job.mode[0].toUpperCase() + job.mode.slice(1)}</span>
-          {job.extra.map((e) => <span className="chip" key={e}>{e}</span>)}
+          {jobMode && <span className="chip">{jobMode}</span>}
+          {extras.map((e) => <span className="chip" key={e}>{e}</span>)}
         </div>
       </div>
       <div className="job-side">
@@ -27,7 +29,7 @@ export default function JobCard({ job }) {
           <Icon name="bookmark" />
         </button>
         <span className="pay">{job.pay}</span>
-        <span className="when">{job.when}</span>
+        <span className="when">{job.when || "Recently"}</span>
       </div>
     </article>
   );

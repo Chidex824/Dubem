@@ -1,26 +1,38 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Field from "../components/Field.jsx";
+import { login as loginRequest } from "../api/client.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 
 const HOME_FOR = { seeker: "/account", org: "/post", admin: "/admin" };
 
 export default function Login() {
-  const { signInAs } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname;      // the page they were trying to open
+  const from = location.state?.from?.pathname;
 
   const [form, setForm] = useState({ email: "", password: "" });
-  const [demoRole, setDemoRole] = useState("seeker");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    // TEMPORARY: pretend the login worked. Django will check the real email and password.
-    signInAs(demoRole);
-    navigate(from || HOME_FOR[demoRole], { replace: true });
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const result = await loginRequest(form.email.trim(), form.password);
+      signIn(result.user, result.token);
+      const target = from || HOME_FOR[result.user?.role] || "/";
+      navigate(target, { replace: true });
+    } catch (err) {
+      setError(err.message || "Could not sign you in.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -35,17 +47,11 @@ export default function Login() {
           <Field id="li-pw" name="password" type="password" label="Password" autoComplete="current-password"
                  value={form.password} onChange={set} required />
 
-          <div className="field">
-            <label htmlFor="li-role">Sign in as (demo only)</label>
-            <select className="select" id="li-role" value={demoRole} onChange={(e) => setDemoRole(e.target.value)}>
-              <option value="seeker">Seeker</option>
-              <option value="org">Organization</option>
-              <option value="admin">Admin</option>
-            </select>
-            <span className="hint">Delete this field when the real login is connected.</span>
-          </div>
+          {error && <div className="banner banner-bad"><div>{error}</div></div>}
 
-          <button className="btn btn-primary" type="submit">Sign in</button>
+          <button className="btn btn-primary" type="submit" disabled={submitting}>
+            {submitting ? "Signing in..." : "Sign in"}
+          </button>
           <p className="note"><Link to="/login">Forgot your password?</Link></p>
           <p className="note">New to Dubem? <Link to="/signup">Create an account</Link></p>
         </form>
