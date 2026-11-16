@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="hero">
+      <div className="hero text-center px-24" aria-label="Search for jobs, internships and fellowships">
         <h2>Opportunities from verified organizations, in one place</h2>
         <p className="sub">Jobs, internships and fellowships across Africa and the world. Every listing is reviewed before it goes live.</p>
 
